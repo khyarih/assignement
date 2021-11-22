@@ -16,11 +16,11 @@ L'identifiant fonctionnel d'un compte dans ce cas préçis est le RIB .
 ## Assignement :
 
 * Le code présente des anomalies de qualité (bonnes pratiques , abstraction , lisibilité ...) et des bugs . 
-    * localisez les
+    * localiser le maximum 
     * Essayer d'améliorer la qualité du code .    
-    * Essayez de résoudre le maximum de bugs. 
+    * Essayer de résoudre les bugs détectés. 
 * Implementer le use case `Versement` 
-* Ajoutez des tests unitaires.  
+* Ajouter des tests unitaires.  
 * **Nice to have** : Ajouter une couche de sécurité 
 
 
