@@ -39,4 +39,7 @@ Run command :
 ## or use any prefered method (IDE , java -jar , docker .....)
 ```
 
-
+## How to submit 
+* Fork the project into your personal gitlab space .    
+* Do the stuff .
+* Send us the link .
