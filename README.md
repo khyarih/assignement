@@ -23,6 +23,20 @@ L'identifiant fonctionnel d'un compte dans ce cas préçis est le RIB .
 * Ajouter des tests unitaires.  
 * **Nice to have** : Ajouter une couche de sécurité 
 
+## How to use 
+To build the projet you will need : 
+* Java 11+ 
+* Maven
 
+Build command : 
+```
+mvn clean install
+```
+
+Run command : 
+```
+./mvnw spring-boot:run 
+## or use any prefered method (IDE , java -jar , docker .....)
+```
 
 
