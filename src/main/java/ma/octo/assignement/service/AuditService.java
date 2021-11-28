@@ -12,9 +12,9 @@ import javax.transaction.Transactional;
 
 @Service
 @Transactional
-public class AutiService {
+public class AuditService {
 
-    Logger LOGGER = LoggerFactory.getLogger(AutiService.class);
+    Logger LOGGER = LoggerFactory.getLogger(AuditService.class);
 
     @Autowired
     private AuditVirementRepository auditVirementRepository;
