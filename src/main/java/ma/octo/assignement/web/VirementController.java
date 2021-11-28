@@ -10,7 +10,7 @@ import ma.octo.assignement.exceptions.TransactionException;
 import ma.octo.assignement.repository.CompteRepository;
 import ma.octo.assignement.repository.UtilisateurRepository;
 import ma.octo.assignement.repository.VirementRepository;
-import ma.octo.assignement.service.AutiService;
+import ma.octo.assignement.service.AuditService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +21,8 @@ import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.List;
 
-@RestController(value = "/virements")
+@RestController
+@RequestMapping(value = "/virements")
 class VirementController {
 
     public static final int MONTANT_MAXIMAL = 10000;
@@ -29,17 +30,17 @@ class VirementController {
     Logger LOGGER = LoggerFactory.getLogger(VirementController.class);
 
     @Autowired
-    private CompteRepository rep1;
+    private CompteRepository compteRep;
     @Autowired
-    private VirementRepository re2;
+    private VirementRepository virementRep;
     @Autowired
-    private AutiService monservice;
+    private AuditService monservice;
     @Autowired
-    private UtilisateurRepository re3;
+    private UtilisateurRepository userRepo;
 
     @GetMapping("lister_virements")
     List<Virement> loadAll() {
-        List<Virement> all = re2.findAll();
+        List<Virement> all = virementRep.findAll();
 
         if (CollectionUtils.isEmpty(all)) {
             return null;
@@ -50,7 +51,7 @@ class VirementController {
 
     @GetMapping("lister_comptes")
     List<Compte> loadAllCompte() {
-        List<Compte> all = rep1.findAll();
+        List<Compte> all = compteRep.findAll();
 
         if (CollectionUtils.isEmpty(all)) {
             return null;
@@ -61,7 +62,7 @@ class VirementController {
 
     @GetMapping("lister_utilisateurs")
     List<Utilisateur> loadAllUtilisateur() {
-        List<Utilisateur> all = re3.findAll();
+        List<Utilisateur> all = userRepo.findAll();
 
         if (CollectionUtils.isEmpty(all)) {
             return null;
@@ -74,68 +75,106 @@ class VirementController {
     @ResponseStatus(HttpStatus.CREATED)
     public void createTransaction(@RequestBody VirementDto virementDto)
             throws SoldeDisponibleInsuffisantException, CompteNonExistantException, TransactionException {
-        Compte c1 = rep1.findByNrCompte(virementDto.getNrCompteEmetteur());
-        Compte f12 = rep1
-                .findByNrCompte(virementDto.getNrCompteBeneficiaire());
+        Compte fromAccount = compteRep.findByNrCompte(virementDto.getNrCompteEmetteur());
+        Compte toAccount = compteRep.findByNrCompte(virementDto.getNrCompteBeneficiaire());
 
-        if (c1 == null) {
+        //Check if all conditions are satisfied
+        //Exception will be throws is case of Error
+        validateOperation(fromAccount,toAccount,virementDto);
+
+        //Update Accounts
+        updateAccounts(fromAccount, toAccount, virementDto);
+    
+        //Create Virement Instance
+        Virement virement = new Virement();
+        virement.setDateExecution(virementDto.getDate());
+        virement.setCompteBeneficiaire(toAccount);
+        virement.setCompteEmetteur(fromAccount);
+        virement.setMontantVirement(virementDto.getMontantVirement());
+
+        virementRep.save(virement);
+
+        //Audit the virement
+        auditVirement(virementDto);
+
+    }
+
+    /**
+     *
+     * @param fromAccount
+     * the account from where we get the amount
+     * @param virementDto
+     * the infos about amount
+     * @param toAccount
+     * the account were we put the amount
+     * @throws CompteNonExistantException
+     * @throws TransactionException
+     * @throws SoldeDisponibleInsuffisantException
+     */
+    private void validateOperation(Compte fromAccount, Compte toAccount , VirementDto virementDto)
+            throws CompteNonExistantException, TransactionException, SoldeDisponibleInsuffisantException {
+        // the Two Accounts should be existed
+        if (fromAccount == null) {
             System.out.println("Compte Non existant");
             throw new CompteNonExistantException("Compte Non existant");
         }
 
-        if (f12 == null) {
+        if (toAccount == null) {
             System.out.println("Compte Non existant");
             throw new CompteNonExistantException("Compte Non existant");
         }
 
-        if (virementDto.getMontantVirement().equals(null)) {
+        //Check Montant Constraints
+        if (virementDto.getMontantVirement().equals(null) || virementDto.getMontantVirement().intValue() == 0) {
             System.out.println("Montant vide");
             throw new TransactionException("Montant vide");
-        } else if (virementDto.getMontantVirement().intValue() == 0) {
-            System.out.println("Montant vide");
-            throw new TransactionException("Montant vide");
-        } else if (virementDto.getMontantVirement().intValue() < 10) {
+        }
+        else
+        if (virementDto.getMontantVirement().intValue() < 10) {
             System.out.println("Montant minimal de virement non atteint");
             throw new TransactionException("Montant minimal de virement non atteint");
-        } else if (virementDto.getMontantVirement().intValue() > MONTANT_MAXIMAL) {
+        }
+        else
+        if (virementDto.getMontantVirement().intValue() > MONTANT_MAXIMAL) {
             System.out.println("Montant maximal de virement dépassé");
             throw new TransactionException("Montant maximal de virement dépassé");
         }
 
+        //Check the motif
         if (virementDto.getMotif().length() < 0) {
             System.out.println("Motif vide");
             throw new TransactionException("Motif vide");
         }
 
-        if (c1.getSolde().intValue() - virementDto.getMontantVirement().intValue() < 0) {
+        //First account should have in sold at least Motant
+        if (fromAccount.getSolde().intValue() - virementDto.getMontantVirement().intValue() < 0) {
             LOGGER.error("Solde insuffisant pour l'utilisateur");
+            throw new SoldeDisponibleInsuffisantException("Solde insuffisant pour l'utilisateur");
         }
+    }
 
-        if (c1.getSolde().intValue() - virementDto.getMontantVirement().intValue() < 0) {
-            LOGGER.error("Solde insuffisant pour l'utilisateur");
-        }
+    /**
+     *
+     * @param fromAccount
+     * the account from where we get the amount
+     * @param virementDto
+     * the infos about amount
+     * @param toAccount
+     * the account were we put the amount
+     */
+    private void updateAccounts(Compte fromAccount, Compte toAccount, VirementDto virementDto){
 
-        c1.setSolde(c1.getSolde().subtract(virementDto.getMontantVirement()));
-        rep1.save(c1);
+        fromAccount.setSolde(fromAccount.getSolde().subtract(virementDto.getMontantVirement()));
+        compteRep.save(fromAccount);
 
-        f12
-                .setSolde(new BigDecimal(f12.getSolde().intValue() + virementDto.getMontantVirement().intValue()));
-        rep1.save(f12);
+        toAccount.setSolde(new BigDecimal(toAccount.getSolde().intValue() + virementDto.getMontantVirement().intValue()));
+        compteRep.save(toAccount);
+    }
 
-        Virement virement = new Virement();
-        virement.setDateExecution(virementDto.getDate());
-        virement.setCompteBeneficiaire(f12);
-        virement.setCompteEmetteur(c1);
-        virement.setMontantVirement(virementDto.getMontantVirement());
-
-        re2.save(virement);
-
+    private void auditVirement(VirementDto virementDto){
         monservice.auditVirement("Virement depuis " + virementDto.getNrCompteEmetteur() + " vers " + virementDto
-                        .getNrCompteBeneficiaire() + " d'un montant de " + virementDto.getMontantVirement()
-                        .toString());
+                .getNrCompteBeneficiaire() + " d'un montant de " + virementDto.getMontantVirement()
+                .toString());
     }
 
-    private void save(Virement Virement) {
-        re2.save(Virement);
-    }
 }
