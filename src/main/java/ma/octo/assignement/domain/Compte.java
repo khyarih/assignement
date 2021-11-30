@@ -1,8 +1,15 @@
 package ma.octo.assignement.domain;
 
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.math.BigDecimal;
 
+@Getter
+@Setter
+@NoArgsConstructor
 @Entity
 @Table(name = "COMPTE")
 public class Compte {
@@ -13,6 +20,7 @@ public class Compte {
   @Column(length = 16, unique = true)
   private String nrCompte;
 
+  @Column(unique = true, nullable = false)
   private String rib;
 
   @Column(precision = 16, scale = 2)
@@ -21,44 +29,4 @@ public class Compte {
   @ManyToOne()
   @JoinColumn(name = "utilisateur_id")
   private Utilisateur utilisateur;
-
-  public String getNrCompte() {
-    return nrCompte;
-  }
-
-  public void setNrCompte(String nrCompte) {
-    this.nrCompte = nrCompte;
-  }
-
-  public String getRib() {
-    return rib;
-  }
-
-  public void setRib(String rib) {
-    this.rib = rib;
-  }
-
-  public BigDecimal getSolde() {
-    return solde;
-  }
-
-  public void setSolde(BigDecimal solde) {
-    this.solde = solde;
-  }
-
-  public Utilisateur getUtilisateur() {
-    return utilisateur;
-  }
-
-  public void setUtilisateur(Utilisateur utilisateur) {
-    this.utilisateur = utilisateur;
-  }
-
-  public Long getId() {
-    return id;
-  }
-
-  public void setId(Long id) {
-    this.id = id;
-  }
 }
