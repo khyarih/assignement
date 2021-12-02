@@ -21,4 +21,12 @@ public class UtilisateurService {
         List<Utilisateur> users = repository.findAll();
         return users.isEmpty() ? null : users;
     }
+
+    public void saveAll(List<Utilisateur> users){
+        repository.saveAll(users);
+    }
+
+    public void save(Utilisateur utilisateur) {
+        repository.save(utilisateur);
+    }
 }

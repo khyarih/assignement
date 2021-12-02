@@ -39,7 +39,7 @@ public class VersementService {
         return versements.isEmpty() ? null : versements;
     }
 
-    public void executerVersement(VersementDto versementDto)throws CompteNonExistantException, TransactionException {
+    public VersementDto executerVersement(VersementDto versementDto)throws CompteNonExistantException, TransactionException {
 
         try{
             //mapping to Versement
@@ -57,6 +57,8 @@ public class VersementService {
 
             //Audit the versement
             auditVersement(versementDto);
+
+            return mapper.mapVersementToVersementDto(versement);
 
         }catch(MappingException e){
             throw new TransactionException(e.getMessage());
@@ -95,7 +97,7 @@ public class VersementService {
     @Transactional(rollbackOn = {Exception.class})
     void updateAccounts(Versement versement){
 
-        versement.getCompteBeneficiaire().getSolde().add(versement.getMontantVirement());
+        versement.getCompteBeneficiaire().setSolde(versement.getCompteBeneficiaire().getSolde().add(versement.getMontantVirement()));
         compteService.save(versement.getCompteBeneficiaire());
 
     }
