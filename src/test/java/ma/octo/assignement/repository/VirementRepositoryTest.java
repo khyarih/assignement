@@ -18,18 +18,23 @@ public class VirementRepositoryTest {
 
   @Test
   public void findOne() {
+    //TODO implement findAllFindOne
   }
 
   @Test
   public void findAll() {
-
+    //TODO implement findAlTest
   }
 
   @Test
   public void save() {
+    //TODO implement findAlSave
+    
+    //Save a 
   }
 
   @Test
   public void delete() {
+    //TODO implement findAlDelete
   }
 }
