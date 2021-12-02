@@ -27,7 +27,7 @@ public class JpaConfig {
     public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
-        em.setPackagesToScan(new String[] { "ma.octo.assignement.domain" });
+        em.setPackagesToScan("ma.octo.assignement.domain");
         em.setPersistenceUnitName("entityManager");
 
         JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();

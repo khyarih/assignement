@@ -39,7 +39,11 @@ public class VirementService{
         return virements.isEmpty() ? null : virements;
     }
 
-    public void executerVirement(VirementDto virementDto) throws TransactionException, CompteNonExistantException, SoldeDisponibleInsuffisantException {
+    public void save(Virement virement){
+        repository.save(virement);
+    }
+
+    public VirementDto executerVirement(VirementDto virementDto) throws TransactionException, CompteNonExistantException, SoldeDisponibleInsuffisantException {
 
         try{
             Virement virement = mapper.mapVirementDtoToVirement(virementDto);
@@ -56,6 +60,8 @@ public class VirementService{
 
             //Audit the virement
             auditVirement(virementDto);
+
+            return mapper.mapVirementToVirementDto(virement);
 
         } catch (MappingException e) {
             throw new TransactionException(e.getMessage());
@@ -94,8 +100,8 @@ public class VirementService{
 
     @Transactional(rollbackOn = {Exception.class})
     void updateAccounts(Virement virement){
-        virement.getCompteEmetteur().getSolde().subtract(virement.getMontantVirement());
-        virement.getCompteBeneficiaire().getSolde().add(virement.getMontantVirement());
+        virement.getCompteEmetteur().setSolde(virement.getCompteEmetteur().getSolde().subtract(virement.getMontantVirement()));
+        virement.getCompteBeneficiaire().setSolde(virement.getCompteBeneficiaire().getSolde().add(virement.getMontantVirement()));
 
         compteService.save(virement.getCompteEmetteur());
         compteService.save(virement.getCompteBeneficiaire());
