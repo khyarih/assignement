@@ -38,13 +38,13 @@ public class MapStructMapperImpl implements MapStructMapper{
             return null;
 
         if(virementDto.getNrCompteEmetteur() == null)
-            throw new MappingException("numero de compte emetteur est vide");
+            throw new MappingException("numero de compte emetteur est null");
 
         if(virementDto.getNrCompteBeneficiaire() == null)
-            throw new MappingException("numero de compte Binificiare est vide");
+            throw new MappingException("numero de compte Binificiare est null");
 
         if(virementDto.getMontantVirement() == null )
-            throw new MappingException("Montant est vide");
+            throw new MappingException("Montant est null");
 
         Compte fromAccount = compteRepository.findByNrCompte(virementDto.getNrCompteEmetteur());
         Compte toAccount = compteRepository.findByNrCompte(virementDto.getNrCompteBeneficiaire());
