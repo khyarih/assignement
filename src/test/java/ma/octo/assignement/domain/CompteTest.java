@@ -6,11 +6,10 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
 
-@SpringBootTest
 public class CompteTest {
 
     @Test
-    public void shouldGetCompteObjectProperties() throws Exception {
+    public void shouldGetCompteProperties() throws Exception {
 
         Long id = 1L;
         BigDecimal solde = BigDecimal.valueOf(100);

@@ -23,7 +23,7 @@ public class Compte {
   @Column(unique = true, nullable = false)
   private String rib;
 
-  @Column(precision = 16, scale = 2)
+  @Column(precision = 16, scale = 2, nullable = false)
   private BigDecimal solde;
 
   @ManyToOne()
